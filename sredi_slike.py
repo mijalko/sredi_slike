@@ -11,6 +11,8 @@ from hachoir_parser import createParser
 from os import walk
 import os
 import shutil
+from PIL import Image
+from PIL.ExifTags import TAGS
 
 FOLDER_FORMAT = "%Y_%m_%d"
 
@@ -24,17 +26,18 @@ def get_fiels_and_folders(start_folder, destination=None, import_pictures = Fals
 
                     desired_folder_name = None
                     if fileExtension.lower().strip() == ".jpg":
-                        with open(path, 'rb') as opened_file:
-                            tags = exifread.process_file(opened_file)
-                            if "Image DateTime" in tags:
-                                creation_time = tags["Image DateTime"]
-                                # 2015:01:01 01:16:56
-                                date_object = datetime.datetime.strptime(creation_time.printable, '%Y:%m:%d %H:%M:%S')
+
+                        for (k, v) in Image.open(path)._getexif().iteritems():
+                            if TAGS.get(k) == "DateTimeOriginal":
+                                creation_time = v
+                                date_object = datetime.datetime.strptime(creation_time, '%Y:%m:%d %H:%M:%S')
                                 creation_date = date_object
 
                                 desired_folder_name = creation_date.strftime(FOLDER_FORMAT)
-                            else:
-                                print "warning: %s does not have creation time info" % path
+                                break
+
+                        if desired_folder_name is None:
+                            print "warning: %s does not have creation time info" % path
                     else:
                         try:
                             parser = createParser(unicode(path))
