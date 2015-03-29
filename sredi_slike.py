@@ -4,9 +4,7 @@ import enzyme
 import datetime
 import struct
 import sys
-EPOCH_ADJUSTER = 2082844800
-
-ATOM_HEADER_SIZE = 8
+from optparse import OptionParser
 
 from hachoir_metadata import extractMetadata
 from hachoir_parser import createParser
@@ -14,25 +12,9 @@ from os import walk
 import os
 import shutil
 
-
 FOLDER_FORMAT = "%Y_%m_%d"
 
-class FolderInfo():
-    def __init__(self):
-        self.folders = []
-        self.files = []
-        self.path = ""
-
-
-class FileInfo():
-    def __init__(self):
-        self.path = ""
-        self.name = ""
-        self.creation_date = None
-        self.desired_folder = ""
-
-
-def get_fiels_and_folders(start_folder, destination=None):
+def get_fiels_and_folders(start_folder, destination=None, import_pictures = False):
     for (dirpath, dirnames, filenames) in walk(start_folder):
         for f in filenames:
             try:
@@ -66,7 +48,7 @@ def get_fiels_and_folders(start_folder, destination=None):
                         desired_folder = os.path.join(start_folder, desired_folder_name)
 
                         if desired_folder != dirpath or destination is not None:
-                            if desired_folder != dirpath:
+                            if desired_folder != dirpath and not import_pictures:
                                 print "file %s should be in %s" % (path, desired_folder)
 
                             if destination is None:
@@ -102,13 +84,21 @@ def get_fiels_and_folders(start_folder, destination=None):
 
 
 def main():
+    parser = OptionParser()
+    parser.add_option("-i", "--import", dest="import_pic", action="store_true", default=False, help="import files from storage")
 
     source = raw_input("Enter pictures folder: ")
     destination = raw_input("Enter destination folder: ")
-    fi = FolderInfo()
-    fi.path = source
-    #get_fiels_and_folders(source, "c:\\slike2")
-    get_fiels_and_folders(source, destination)
+
+    if destination.strip() == "":
+        destination = None
+
+    (options, args) = parser.parse_args()
+    if options.import_pic and destination is None:
+        print "Error: You need to specify destination  folder"
+        return
+
+    get_fiels_and_folders(source, destination, options.import_pic)
 
 if __name__ == '__main__':
     main()
