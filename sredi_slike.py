@@ -1,9 +1,9 @@
 __author__ = 'mijalko'
-import exifread
-import enzyme
+#import exifread
+#import enzyme
 import datetime
-import struct
-import sys
+#import struct
+#import sys
 from optparse import OptionParser
 
 from hachoir_metadata import extractMetadata
